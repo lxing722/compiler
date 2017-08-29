@@ -1,0 +1,33 @@
+int x;
+int y;
+int z;
+struct node l;
+struct node1{
+    int x;
+    int y;
+    int z;
+};
+void test(int x, int y){
+    int x;
+    int y;
+    x=test(x, y);
+    cin >> x;
+    cout<<y;
+    x++;
+    y --;
+    if(x >1){
+        x=1;
+    }
+
+    if(x= 1){
+        x =1;
+    }
+    else{
+        x=2;
+    }
+    while(x !=1){
+        y =2;
+    }
+    return x;
+    return;
+}
