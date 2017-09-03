@@ -349,13 +349,13 @@ class VarDeclNode extends DeclNode {
     public SymInfo nameAnalysis(SymTable symTab) {
         Type type = myType.type();
         if(type.isVoidType()){
-            System.out.println("Error: void type declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "bad");
         }
         if(type.isStructType())
             if(symTab.lookupGlobal(type.toString()) == null)
-                System.out.println("Error: no such type");
+                ErrMsg.fatal(myId.lineNum(), myId.charNum(), "bad");
         if(symTab.lookupLocal(myId.name()) != null)
-            System.out.println("Error: value name declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "multiply declared");
         else{
             SymInfo sym = new SymInfo(type);
             symTab.addDecl(myId.name(), sym);
@@ -381,12 +381,12 @@ class VarDeclNode extends DeclNode {
     public SymInfo nameAnalysis(SymTable structSymTab, SymTable globalTab) {
         Type type = myType.type();
         if(type.isVoidType())
-            System.out.println("Error: void type declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "bad");
         if(type.isStructType())
-            if(globalTab.lookupGlobal(myType.toString()) == null)
-                System.out.println("Error: no such type");
+            if(globalTab.lookupGlobal(type.toString()) == null)
+                ErrMsg.fatal(myId.lineNum(), myId.charNum(), "bad");
         if(structSymTab.lookupLocal(myId.name()) != null)
-            System.out.println("Error: value name declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "multiply declared");
         else
             structSymTab.addDecl(myId.name(), new SymInfo(type));           
         return null;
@@ -434,22 +434,23 @@ class FnDeclNode extends DeclNode {
      */
     public SymInfo nameAnalysis(SymTable symTab) {
         boolean declared = false;
+        List<Type> list = null;
+        FnInfo fn = null;
         if(symTab.lookupLocal(myId.name()) != null){
-            System.out.println("Error: function name declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "multiply declared");
             declared = true;
-        }
-        else{
-            FnInfo fn = new FnInfo(myType.type(), myFormalsList.length());
-            //fn.addFormals(myFormalsList.nameAnalysis(symTab));
-            symTab.addDecl(myId.name(), fn);
         }
         symTab.addScope();      
         if(!declared){
-
-            myFormalsList.nameAnalysis(symTab);
+            list = myFormalsList.nameAnalysis(symTab);
         }
         myBody.nameAnalysis(symTab);
         symTab.removeScope();
+        if(!declared){
+            fn = new FnInfo(myType.type(), myFormalsList.length());
+            fn.addFormals(list);
+            symTab.addDecl(myId.name(), fn);
+        }
         return null;
     }    
     
@@ -488,9 +489,9 @@ class FormalDeclNode extends DeclNode {
      */
     public SymInfo nameAnalysis(SymTable symTab) {
         if(myType.type().isVoidType())
-            System.out.println("Error: void type declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "bad");
         else if(symTab.lookupLocal(myId.name()) != null){
-            System.out.println("Error: multiply declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "multiply declared");
         }
         else{
             SymInfo sym = new SymInfo(myType.type());
@@ -530,7 +531,7 @@ class StructDeclNode extends DeclNode {
     public SymInfo nameAnalysis(SymTable symTab) {
         boolean declared = false;
         if(symTab.lookupGlobal(myId.name()) != null){
-            System.out.println("Error: multiply declared");
+            ErrMsg.fatal(myId.lineNum(), myId.charNum(), "multiply declared");
             declared = true;
         }
         SymTable structSymTab = new SymTable();        
@@ -968,6 +969,7 @@ abstract class ExpNode extends ASTnode {
      * Default version for nodes with no names
      */
     public void nameAnalysis(SymTable symTab) { }
+    public SymInfo info() { return null; }
 }
 
 class IntLitNode extends ExpNode {
@@ -1083,7 +1085,7 @@ class IdNode extends ExpNode {
     public void nameAnalysis(SymTable symTab) {
         SymInfo sym = symTab.lookupGlobal(myStrVal);
         if(sym == null){
-            System.out.println("Error: use of undeclared name");
+            ErrMsg.fatal(myLineNum, myCharNum, "use of undeclared name");
         }
         else{
             link(sym);
@@ -1093,12 +1095,15 @@ class IdNode extends ExpNode {
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
         p.print("(");
-        //if(myInfo.getType().isStructType()){
-            //p.print(myInfo.getStructType().name());
-        //}
-        //else{
-            p.print(myInfo.toString());
-        //}
+        if(myInfo != null){
+            Type type = myInfo.getType();
+            if(type.isStructType()){
+                p.print(type.toString());
+            }
+            else{
+                p.print(myInfo.toString());
+            }
+        }
         p.print(")");
     }
 
@@ -1148,13 +1153,32 @@ class DotAccessExpNode extends ExpNode {
      *   table for the appropriate struct definition
      */
     public void nameAnalysis(SymTable symTab) {
+        SymTable table = null;
         myLhs.nameAnalysis(symTab);
-        myId.nameAnalysis(symTab);
-        if(myId.info().getType().isStructType()){
-            myInfo = new StructInfo(myId);
+        SymInfo sym = myLhs.info();
+        if(sym != null){
+            Type type = sym.getType();
+            if(type.isStructType()){
+                table = ((StructDefInfo)symTab.lookupGlobal(type.toString())).getSymTable();
+            }
+            else{
+                table = ((StructDefInfo)sym).getSymTable();
+            }
         }
-    }    
-    
+        if(table.lookupGlobal(myId.name()) == null){
+            ErrMsg.fatal(lineNum(), charNum(), "use of undeclared name");
+        }
+        else{
+            myId.nameAnalysis(table);
+            if(myId.info() != null){
+                Type type = myId.info().getType();
+                if(type.isStructType()){
+                    myInfo = symTab.lookupGlobal(type.toString());
+                }
+            }
+        }
+    }  
+
     public void unparse(PrintWriter p, int indent) {
         myLhs.unparse(p, 0);
         p.print(".");

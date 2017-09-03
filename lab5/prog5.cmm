@@ -1,14 +1,14 @@
-struct Foo { 
-  int x;
-  bool b;
-};
-
 void main() {
-  struct Foo z;
-  int y;
 
-  cin >> z.x;
-  z.b = true;
-
-  y = z.x;
+    int x;
+    int y;
+    int x;
+    
+    x = 10;
+    
+    while ( z > 0 ) {
+        int y;
+        y = x;
+        x = x - 1;
+    }
 }

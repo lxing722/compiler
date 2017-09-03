@@ -52,12 +52,19 @@ class FnInfo extends SymInfo {
     }
 
     public String toString() {
-        String str = "hello";
-       /* for(Type type:list){
-            str += type.toString();
+        String str = "";
+        if(list != null){
+            Iterator<Type> iter = list.iterator();
+            if(iter.hasNext()){
+                str += iter.next().toString();
+                while(iter.hasNext()){
+                    str += ",";
+                    str += iter.next().toString();
+                }
+            }
         }
         str += "->";
-        str += type.toString();*/
+        str += type.toString();
         return str;
     }
 }
