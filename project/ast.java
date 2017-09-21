@@ -146,7 +146,7 @@ class ProgramNode extends ASTnode {
         myDeclList.unparse(p, indent);
     }
 
-    // 1 kid
+    // 1 kid ///
     private DeclListNode myDeclList;
 }
 
