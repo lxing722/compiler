@@ -133,6 +133,9 @@ class ProgramNode extends ASTnode {
     public void nameAnalysis() {
         SymTable symTab = new SymTable();
         myDeclList.nameAnalysis(symTab);
+        if(!mainExist){
+            ErrMsg.fatal(0,0,"No main function");
+        }
     }
     
     /**
@@ -148,6 +151,7 @@ class ProgramNode extends ASTnode {
 
     // 1 kid ///
     private DeclListNode myDeclList;
+    static boolean mainExist = false;
 }
 
 class DeclListNode extends ASTnode {
@@ -551,7 +555,10 @@ class FnDeclNode extends DeclNode {
     public SymInfo nameAnalysis(SymTable symTab) {
         String name = myId.name();
         FnInfo info = null;
-        
+        if(name.equals("main")){
+            ProgramNode.mainExist = true;
+        }
+
         SymInfo dup = symTab.lookupLocal(name);
 
         if (dup != null) {
