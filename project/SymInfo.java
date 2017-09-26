@@ -6,9 +6,10 @@ import java.util.*;
  */
 public class SymInfo {
     private Type type;
-    
+    private int offset;
     public SymInfo(Type type) {
         this.type = type;
+        this.offset = 4;
     }
     
     public Type getType() {
@@ -17,6 +18,10 @@ public class SymInfo {
     
     public String toString() {
         return type.toString();
+    }
+
+    public int getOffSet() {
+        return offset;
     }
 }
 
@@ -30,11 +35,12 @@ class FnInfo extends SymInfo {
     private Type returnType;
     private int numParams;
     private List<Type> paramTypes;
-    
+    private int localSize;
     public FnInfo(Type type, int numparams) {
         super(new FnType());
         returnType = type;
         numParams = numparams;
+        localSize = 0;
     }
 
     public void addFormals(List<Type> L) {
@@ -53,6 +59,18 @@ class FnInfo extends SymInfo {
         return paramTypes;
     }
 
+    public void setLocalSize(int size){
+        localSize = size;
+    }
+
+    public int getParamSize(){
+        return 4*numParams;
+    }
+
+    public int getLocalSize(){
+        return localSize;
+    }
+    
     public String toString() {
         // make list of formals
         String str = "";

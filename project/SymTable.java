@@ -78,4 +78,8 @@ public class SymTable {
             System.out.println(map);
         System.out.println();
     }
+
+    public int numMap(){
+        return bindings.size();
+    }
 }

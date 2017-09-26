@@ -24,33 +24,32 @@ public class Main {
                 System.exit(-1);
             }
 
-            PrintWriter outFile = null;
             try {
-                outFile = new PrintWriter(filename + ".out");
+                Codegen.p = new PrintWriter(filename + ".mips");
             } catch (FileNotFoundException ex) {
                 System.err.println("File " + filename + ".out could not be opened for writing.");
                 System.exit(-1);
             }
             try {
-                processInputFile(inFile,outFile);
+                processInputFile(inFile);
             }
             catch (SyntaxErrorException see) {
                 System.out.println("syntax error: parsing aborted");
             }
             inFile.close();
-            outFile.close();
+            Codegen.p.close();
             filename = readFileName(console,stop);
         }
     }
 
-    private static void processInputFile(FileReader inFile, PrintWriter outFile) {
+    private static void processInputFile(FileReader inFile) {
         CmmParser P = new CmmParser(new Yylex(inFile));
         Symbol root = null; // the parser will return a Symbol whose value
                             // field is the translation of the root nonterminal
                             // (i.e., of the nonterminal "program")
         try {
             root = P.parse(); // do the parse
-            System.out.println ("program parsed correctly.");
+            //System.out.println ("program parsed correctly.");
         } catch (SyntaxErrorException see) {
             throw see;
         } catch (Exception ex){
@@ -60,7 +59,10 @@ public class Main {
         ProgramNode astRoot = (ProgramNode) root.value;
         astRoot.nameAnalysis();  // perform name analysis
         astRoot.typeCheck();     // type checking
-        astRoot.unparse(outFile, 0); // perform the unparsing
+        //astRoot.unparse(outFile, 0); // perform the unparsing
+        if(!ErrMsg.getErr()){
+            astRoot.codeGen();
+        }
     }
     
     /**
