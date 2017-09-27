@@ -14,6 +14,8 @@ public class Main {
         java.util.Scanner console = new java.util.Scanner(System.in);
         String stop = "stop";
         String filename = readFileName(console,stop);
+        String[] str = filename.split(".cmm");
+        String name = str[0];
         
         while ( ! filename.equals(stop) ) {
             FileReader inFile = null;
@@ -25,7 +27,7 @@ public class Main {
             }
 
             try {
-                Codegen.p = new PrintWriter(filename + ".mips");
+                Codegen.p = new PrintWriter(name + ".asm");
             } catch (FileNotFoundException ex) {
                 System.err.println("File " + filename + ".out could not be opened for writing.");
                 System.exit(-1);

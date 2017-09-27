@@ -171,7 +171,7 @@ class DeclListNode extends ASTnode {
         for (DeclNode node : myDecls) {
             SymInfo info =  node.nameAnalysis(symTab);
             if(info != null)
-                size += info.getOffSet();
+                size += (-info.getOffSet());
         }
     }
     
@@ -491,6 +491,10 @@ class VarDeclNode extends DeclNode {
             myId.link(info);
             if(symTab.numMap() == 1){
                 global = true;
+                info.setOffSet(4);
+            }
+            else{
+                info.setOffSet(-4);
             }
         }
         
@@ -649,10 +653,8 @@ class FnDeclNode extends DeclNode {
     public void codeGen() {
         String name = myId.name();
         if(name.equals("main")){
-            Codegen.generate(".text");
-            Codegen.generate(".global main");
             Codegen.genLabel("main");
-            Codegen.genLabel("_start");
+            Codegen.genLabel("__start");
         }
         else{
             Codegen.generate(".text");
@@ -918,7 +920,7 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void codeGen() {
-
+        myAssign.codeGen();
     }
     // 1 kid
     private AssignNode myAssign;
@@ -1094,20 +1096,15 @@ class WriteStmtNode extends StmtNode {
     }
 
     public void codeGen() {
+        myExp.codeGen();
+        Codegen.genPop(Codegen.A0);
         if(myExp instanceof IntLitNode) {
-            IntLitNode node = (IntLitNode)myExp;
-            node.codeGen();
-            Codegen.genPop(Codegen.A0);
             Codegen.generate("li", Codegen.V0, 1);
-            Codegen.generate("syscall");
         }
         if(myExp instanceof StringLitNode) {
-            StringLitNode node = (StringLitNode)myExp;
-            node.codeGen();
-            Codegen.genPop(Codegen.A0);
-            Codegen.generate("li", Codegen.V0, 4);
-            Codegen.generate("syscall");
+            Codegen.generate("li", Codegen.V0, 4);           
         }
+        Codegen.generate("syscall");
     }
 
     // 1 kid
@@ -1411,7 +1408,7 @@ abstract class ExpNode extends ASTnode {
     public void nameAnalysis(SymTable symTab) { }
     
     abstract public Type typeCheck();
-    //abstract public void codeGen();
+    abstract public void codeGen();
     abstract public int lineNum();
     abstract public int charNum();
     
@@ -1537,7 +1534,8 @@ class TrueNode extends ExpNode {
     }
     
     public void codeGen() {
-        
+        Codegen.generate("li", Codegen.T0, 1);
+        Codegen.genPush(Codegen.T0);
     }
     private int myLineNum;
     private int myCharNum;
@@ -1575,7 +1573,8 @@ class FalseNode extends ExpNode {
     }
 
     public void codeGen() {
-        
+        Codegen.generate("li", Codegen.T0, 0);
+        Codegen.genPush(Codegen.T0);
     }
     private int myLineNum;
     private int myCharNum;
@@ -1661,6 +1660,34 @@ class IdNode extends ExpNode {
         }
     }
 
+    public void genJumpAndLink() {
+        if(myStrVal.equals("main")){
+            Codegen.generate("jal", "main");
+        }
+        else{
+            Codegen.generate("jal","_"+myStrVal);
+        }
+    }
+
+    public void codeGen() {
+        int offset = myInfo.getOffSet();
+        if(offset > 0) {
+            Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+        }
+        else {
+            Codegen.generate("lw", Codegen.T0, Codegen.FP, offset);
+        }
+    }
+
+    public void genAddr() {
+        int offset = myInfo.getOffSet();
+        if(offset > 0) {
+            Codegen.generate("la", Codegen.T0, "_" + myStrVal);
+        }
+        else {
+            Codegen.generate("la", Codegen.T0, Codegen.FP, offset);
+        }
+    }
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -1808,6 +1835,9 @@ class DotAccessExpNode extends ExpNode {
         }
     }
 
+    public void codeGen() {
+
+    }
     // 2 kids
     private ExpNode myLhs;    
     private IdNode myId;
@@ -1890,6 +1920,10 @@ class AssignNode extends ExpNode {
         if (indent != -1)  p.print(")");
     }
 
+    public void codeGen() {
+        myLhs.codeGen();
+        myRhs.codeGen();
+    }
     // 2 kids
     private ExpNode myLhs;
     private ExpNode myRhs;
@@ -1969,6 +2003,9 @@ class CallExpNode extends ExpNode {
         p.print(")");
     }
 
+    public void codeGen() {
+
+    }
     // 2 kids
     private IdNode myId;
     private ExpListNode myExpList;  // possibly null
@@ -2003,6 +2040,9 @@ abstract class UnaryExpNode extends ExpNode {
         myExp.nameAnalysis(symTab);
     }
     
+    public void codeGen() {
+
+    }
     // one child
     protected ExpNode myExp;
 }
@@ -2039,6 +2079,9 @@ abstract class BinaryExpNode extends ExpNode {
         myExp2.nameAnalysis(symTab);
     }
     
+    public void codeGen() {
+
+    }
     // two kids
     protected ExpNode myExp1;
     protected ExpNode myExp2;

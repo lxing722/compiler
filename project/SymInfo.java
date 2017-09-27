@@ -7,9 +7,10 @@ import java.util.*;
 public class SymInfo {
     private Type type;
     private int offset;
+
     public SymInfo(Type type) {
         this.type = type;
-        this.offset = 4;
+        this.offset = 0;
     }
     
     public Type getType() {
@@ -20,6 +21,9 @@ public class SymInfo {
         return type.toString();
     }
 
+    public void setOffSet(int offset) {
+        this.offset = offset;
+    }
     public int getOffSet() {
         return offset;
     }

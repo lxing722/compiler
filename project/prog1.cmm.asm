@@ -8,6 +8,8 @@ _test:
 	sw    $fp, 0($sp)	#PUSH
 	subu  $sp, $sp, 4
 	addu  $fp, $sp, 8
+	subu  $sp, $sp, 8
+.L0:
 	lw    $ra, 0($fp)
 	move  $t0, $fp
 	lw    $fp, -4($fp)
@@ -22,6 +24,14 @@ _start:
 	sw    $fp, 0($sp)	#PUSH
 	subu  $sp, $sp, 4
 	addu  $fp, $sp, 8
+	li    $t0, 3
+	sw    $t0, 0($sp)	#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 4($sp)	#POP
+	addu  $sp, $sp, 4
+	li    $v0, 1
+	syscall
+.L1:
 	lw    $ra, 0($fp)
 	move  $t0, $fp
 	lw    $fp, -4($fp)
