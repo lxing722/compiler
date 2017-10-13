@@ -2,6 +2,8 @@ void test() {
     
 }
 int main(){
-    cout << "ni hao";
+    int x;
+    x = 1;
+    cout << "hello";
     cout << "\n";
 }

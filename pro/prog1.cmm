@@ -1,0 +1,11 @@
+void test() {
+    
+}
+int main(){
+    int x;
+    x = 1;
+    if(true) {
+        cout << "hello world!\n";
+    }
+    cout << x;
+}
