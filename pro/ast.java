@@ -1084,8 +1084,7 @@ class PostDecStmtNode extends StmtNode {
     public void codeGen(String label) {
 		if (myExp instanceof IdNode) {
 			IdNode idExp = (IdNode)myExp;
-			
-			
+						
 			idExp.codeGen();
 			idExp.genAddr();
 			Codegen.genPop(Codegen.T1);
@@ -1218,9 +1217,7 @@ class WriteStmtNode extends StmtNode {
 			Codegen.generate("li", Codegen.V0, 1);
         }
         
-       	Codegen.generate("syscall");	
-
-       
+       	Codegen.generate("syscall");	     
 	}
     
 
@@ -1250,11 +1247,7 @@ class IfStmtNode extends StmtNode {
     
     public void nameAnalysis(SymTable symTab, int offset) {
         myExp.nameAnalysis(symTab);
-        symTab.addScope();
-
-
-
-		
+        symTab.addScope();		
         myDeclList.nameAnalysis(symTab);
         myStmtList.nameAnalysis(symTab, offset + 4*myDeclList.getList().size());
       
@@ -1265,10 +1258,7 @@ class IfStmtNode extends StmtNode {
 				this.offset += 4;
 				
 			}
-		}
-        
-        
-        
+		}      
         try {
             symTab.removeScope();
         } catch (EmptySymTableException ex) {
@@ -1356,8 +1346,7 @@ class IfElseStmtNode extends StmtNode {
     public void nameAnalysis(SymTable symTab, int offset) {
         myExp.nameAnalysis(symTab);
         symTab.addScope();
-       
-       
+              
         myThenDeclList.nameAnalysis(symTab);
         myThenStmtList.nameAnalysis(symTab, offset + 4*myThenDeclList.getList().size());
         
@@ -1378,8 +1367,7 @@ class IfElseStmtNode extends StmtNode {
             System.exit(-1);        
         }
         symTab.addScope();
-        
-        
+                
         myElseDeclList.nameAnalysis(symTab);
         myElseStmtList.nameAnalysis(symTab, offset + 4*myElseDeclList.getList().size());
         
@@ -1501,10 +1489,7 @@ class WhileStmtNode extends StmtNode {
 				this.offset += 4;
 				
 			}
-		}
-        
-		
-		
+		}		
         try {
             symTab.removeScope();
         } catch (EmptySymTableException ex) {
@@ -1780,14 +1765,8 @@ class StringLitNode extends ExpNode {
     		Codegen.p.println("\t.text");
     		Codegen.generate("la", Codegen.T0, label);
     		Codegen.genPush(Codegen.T0);
-    	}
-    	
-    	
-    	
+    	}    	
     }
-    
-    
-
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -2208,8 +2187,6 @@ class AssignNode extends ExpNode {
     }
     
     public void codeGen(){
-
-
         if(myLhs instanceof IdNode && myRhs instanceof IdNode){
                       
 			((IdNode)myLhs).genAddr();  
@@ -2478,9 +2455,7 @@ class NotNode extends UnaryExpNode {
 
 		Codegen.generate("seq",Codegen.T0, Codegen.T0, "0");
         Codegen.genPush(Codegen.T0);
-	}
-    
-    
+	}  
 }
 
 // **********************************************************************
